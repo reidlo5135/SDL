@@ -1,32 +1,27 @@
-import { kafka } from '@sdl/kafka';
+import { KafkaClient } from '@sdl/kafka';
 
-const producer = kafka.producer();
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const runProducer = async () => {
-  try {
-    await producer.connect();
-    console.log('Producer connected successfully!');
+    const kafkaClient = new KafkaClient('sdl_gateway', ['192.168.205.220:9092']);
 
-    await producer.send({
-      topic: 'mes.production.completed',
-      messages: [
-        {
-          key: 'product-123',
-          value: JSON.stringify({
-            productId: 'product-123',
-            quantity: 100,
-            timestamp: new Date().toISOString(),
-          }),
-        },
-      ],
-    });
+    try {
+        await kafkaClient.createProducer();
 
-    console.log('Message sent successfully!');
-  } catch (error) {
-    console.error('Error with producer:', error);
-  } finally {
-    await producer.disconnect();
-  }
+        while (true) {
+            await kafkaClient.send("mes.production.completed", JSON.stringify({
+                key: 'product-123',
+                value: JSON.stringify({
+                    productId: 'product-123',
+                    quantity: 100,
+                    timestamp: new Date().toISOString(),
+                }),
+            }));
+            await sleep(1000);
+        }
+    } catch (error) {
+        kafkaClient.getLogger().error('Error with producer:', error);
+    }
 };
 
 (async function main(): Promise<void> {

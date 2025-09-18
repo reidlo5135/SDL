@@ -1,30 +1,14 @@
-import { kafka } from '@sdl/kafka';
-
-const consumer = kafka.consumer({ groupId: 'sdl-core-group' });
+import { KafkaClient } from '@sdl/kafka';
 
 const runConsumer = async () => {
+    const kafkaClient = new KafkaClient('sdl_core', ['192.168.205.220:9092']);
+
     try {
-        await consumer.connect();
-        console.log('Consumer connected successfully!');
-
-        await consumer.subscribe({ topic: 'mes.production.completed', fromBeginning: true });
-        console.log('Subscribed to topic: mes.production.completed');
-
-        await consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                if (message.value) {
-                    const receivedMessage = message.value.toString();
-                    console.log({
-                        topic,
-                        partition,
-                        offset: message.offset,
-                        value: JSON.parse(receivedMessage),
-                    });
-                }
-            },
+        await kafkaClient.createConsumer('mes-core-consumer', 'mes.production.completed', (message) => {
+            kafkaClient.getLogger().info('Received message:', JSON.parse(message));
         });
     } catch (error) {
-        console.error('Error with consumer:', error);
+        kafkaClient.getLogger().error('Error with consumer:', error);
     }
 };
 
