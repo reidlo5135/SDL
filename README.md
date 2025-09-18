@@ -91,9 +91,9 @@ sdl/
 ├── package.json         # Manages the entire workspace
 ├── tsconfig.base.json   # Base TypeScript configuration
 └── packages/
-├── kafka-client/    # Shared Kafka client logic
-├── gateway/         # Receives external data and publishes events (Producer)
-└── core/            # Subscribes to events and processes data (Consumer)
+    ├── kafka-client/    # Shared Kafka client logic
+    ├── gateway/         # Receives external data and publishes events (Producer)
+    └── core/            # Subscribes to events and processes data (Consumer)
 ```
 - packages/kafka-client: Provides a shared Kafka client instance and related utilities for use across all services.
 - packages/gateway: The entry point for external data. It consumes data from outside systems, standardizes it, and publishes it as a Kafka event.
