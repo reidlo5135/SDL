@@ -72,18 +72,6 @@ npm install
 ### 2. Running the Services
    With Kafka running in Docker, open two separate terminal sessions to run each service.
 
-Terminal 1: Run the Core Service (Consumer)
-```bash
-npm run dev -w sdl-core
-```
-
-Terminal 2: Run the Gateway Service (Producer)
-```bash
-npm run dev -w sdl-gateway
-```
-
-You will now see the Core service receiving messages in real-time as they are sent by the Gateway.
-
 ## 📦 Project Structure
 This project is a monorepo using npm Workspaces.
 ```bash
@@ -91,7 +79,7 @@ sdl/
 ├── package.json         # Manages the entire workspace
 ├── tsconfig.base.json   # Base TypeScript configuration
 └── packages/
-    ├── kafka-client/    # Shared Kafka client logic
+    ├── kafka/    # Shared Kafka client logic
     ├── gateway/         # Receives external data and publishes events (Producer)
     └── core/            # Subscribes to events and processes data (Consumer)
 ```
