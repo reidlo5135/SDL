@@ -17,27 +17,30 @@ This project adopts an event-driven microservice architecture to minimize coupli
 ```mermaid
 graph TD
     subgraph "External Systems"
-        Simulator[Virtual MES/SCM]
+        RealMES[Real MES/SCM]
+        Simulator(sdl_simulator)
     end
 
     subgraph "SDL Platform"
-        Gateway(packages/gateway)
+        Gateway(sdl_gateway)
         Kafka(Event Bus - Kafka)
 
         subgraph "Subscriber Services"
-            Core(packages/core) --> DB[(RDBMS)]
-            FMS(packages/fms)
-            Analytics(packages/analytics) --> DL[(Data Lake)]
+            Core(sdl_core) --> RDBMS[(RDBMS)]
+            FMS(sdl_fms)
+            Collector(sdl_collector) --> DataLake[(Data Lake)]
+            Dashboard(sdl_dashboard)
         end
     end
 
-    Simulator -- "Data Ingestion (HTTP/gRPC)" --> Gateway
+    RealMES -- "Real Data" --> Gateway
+    Simulator -- "Virtual Data" --> Gateway
     Gateway -- "Publish Standardized Event" --> Kafka
 
     Kafka -- "Consume Event" --> Core
     Kafka -- "Consume Event" --> FMS
-    Kafka -- "Consume Event" --> Analytics
-    
+    Kafka -- "Consume Event" --> Collector
+    Kafka -- "Consume Event" --> Dashboard
 ```
 
 ## 🚀 Getting Started
@@ -65,7 +68,7 @@ cd sdl
 ```bash
 npm install
 ```
-`
+
 ### 2. Running the Services
    With Kafka running in Docker, open two separate terminal sessions to run each service.
 
@@ -97,7 +100,7 @@ sdl/
 - packages/core: Subscribes to specific topics to process core business logic and persist data to a database.
 
 
-## ⏱️ Data Flow (Sequence Diagram)
+## ⏱️ Data Flow
 This diagram illustrates the journey of a single event as it flows through the platform.
 
 ```mermaid
