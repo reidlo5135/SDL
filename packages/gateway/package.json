@@ -5,6 +5,10 @@
     "dev": "nodemon src/main.ts"
   },
   "dependencies": {
-    "@sdl/kafka": "1.0.0"
+    "@sdl/kafka": "1.0.0",
+    "mqtt": "^5.14.1"
+  },
+  "devDependencies": {
+    "@types/mqtt": "^2.5.0"
   }
 }

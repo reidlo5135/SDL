@@ -1,66 +1,59 @@
-import {Admin, Consumer, Kafka, Producer} from 'kafkajs'
+import {Admin, Consumer, Kafka, Logger, Producer} from 'kafkajs'
 
-export class KafkaClient {
-    private kafka: Kafka;
-    private admin?: Admin;
-    private producer?: Producer;
-    private consumer?: Consumer;
+abstract class KafkaBase {
+    protected readonly kafka: Kafka;
 
-    constructor(clientId: string, brokers: string[]) {
-        this.kafka = new Kafka({
-            clientId,
-            brokers
-        });
+    protected constructor(kafka: Kafka) {
+        this.kafka = kafka;
     }
-    
-    public getLogger(): any {
+
+    public getLogger(): Logger {
         if (!this.kafka) {
             throw new Error('Kafka client is not initialized');
         }
-        
+
         return this.kafka.logger();
     }
+}
 
-    public createAdmin(): Admin {
-        this.admin = this.kafka.admin();
-        return this.admin;
-    }
+export class KafkaClient extends KafkaBase {
 
-    public async createProducer(): Promise<void> {
-        this.producer = this.kafka.producer();
-        await this.producer.connect();
-        this.getLogger().info('Producer connected successfully!');
-    }
-
-    public async send(topic: string, message: string): Promise<void> {
-        if (!this.producer) {
-            throw new Error('Producer is not initialized');
-        }
-
-        this.getLogger().info(`Sending message to topic: ${topic} with value: ${message}`);
-        await this.producer.send({
-            topic,
-            messages: [{ value: message }],
+    constructor(clientId: string, brokers: string[]) {
+        const kafkaInstance = new Kafka({
+            clientId,
+            brokers
         });
+        super(kafkaInstance);
     }
 
-    public async disconnectProducer(): Promise<void> {
-        if (!this.producer) {
-            throw new Error('Producer is not initialized');
-        }
-        this.getLogger().info('Disconnecting producer...');
-        await this.producer.disconnect();
-        this.getLogger().info('Producer disconnected successfully!');
+    public async createConsumer(groupId: string): Promise<KafkaConsumer> {
+        return new KafkaConsumer(this.kafka, groupId);
     }
 
-    public async createConsumer(groupId: string, topic: string, callback: (message: string) => void): Promise<void> {
+    public async createProducer(): Promise<KafkaProducer> {
+        return new KafkaProducer(this.kafka);
+    }
+}
+
+export class KafkaConsumer extends KafkaBase {
+    private readonly consumer?: Consumer;
+
+    constructor(kafka: Kafka, groupId: string) {
+        super(kafka);
         this.consumer = this.kafka.consumer({ groupId });
+        this.consumer.connect()
+            .then(r => this.getLogger().info('Consumer connected successfully!'))
+            .catch(e => this.getLogger().error(`Error connecting consumer: ${e}`));
+    }
 
-        await this.consumer.connect();
-        this.getLogger().info(`Consumer connected successfully with groupId: ${groupId}`);
+    public async consume(topic: string, callback: (message: string) => void): Promise<void> {
+        if (!this.consumer) {
+            throw new Error('Consumer is not initialized');
+        }
 
-        await this.consumer.subscribe({ topic });
-        this.getLogger().info(`Subscribed to topic: ${topic}`);
+        await this.consumer.subscribe({ topic })
+            .then(r => this.getLogger().info(`Consumer subscribed successfully with topic: ${topic}`))
+            .catch(e => this.getLogger().error(`Error subscribing to topic: ${e}`));
 
         await this.consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
@@ -69,6 +62,54 @@ export class KafkaClient {
                     callback(receivedMessage);
                 }
             }
-        });
+        })
+            .then(r => this.getLogger().info('Consumer running successfully!'))
+            .catch(e => this.getLogger().error(`Error running consumer: ${e}`));
+    }
+
+    public async disconnectConsumer(): Promise<void> {
+        if (!this.consumer) {
+            throw new Error('Consumer is not initialized');
+        }
+
+        this.getLogger().info('Disconnecting consumer...');
+        await this.consumer.disconnect()
+            .then(r => this.getLogger().info('Consumer disconnected successfully!'))
+            .catch(e => this.getLogger().error(`Error disconnecting consumer: ${e}`));
+    }
+}
+
+export class KafkaProducer extends KafkaBase {
+    private readonly producer?: Producer;
+
+    constructor(kafka: Kafka) {
+        super(kafka);
+        this.producer = this.kafka.producer();
+        this.producer.connect().then(r => this.getLogger().info('Producer connected successfully!'));
+    }
+
+    public async produce(topic: string, message: string): Promise<void> {
+        if (!this.producer) {
+            throw new Error('Producer is not initialized');
+        }
+
+        this.getLogger().info(`Sending message to topic: ${topic} with value: ${message}`);
+        await this.producer.send({
+            topic,
+            messages: [{ value: message }],
+        })
+            .then(r => this.getLogger().info('Message sent successfully!'))
+            .catch(e => this.getLogger().error('Error sending message:', e));
+    }
+
+    public async disconnectProducer(): Promise<void> {
+        if (!this.producer) {
+            throw new Error('Producer is not initialized');
+        }
+
+        this.getLogger().info('Disconnecting producer...');
+        await this.producer.disconnect()
+            .then(r => this.getLogger().info('Producer disconnected successfully!'))
+            .catch(e => this.getLogger().error(`Error disconnecting producer: ${e}`));
     }
 }
