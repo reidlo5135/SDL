@@ -1,0 +1,10 @@
+{
+  "name": "@sdl/gateway",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "nodemon src/main.ts"
+  },
+  "dependencies": {
+    "@sdl/kafka": "1.0.0"
+  }
+}

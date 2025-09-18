@@ -1,0 +1,8 @@
+{
+  "name": "@sdl/kafka",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
+}
