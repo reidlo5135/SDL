@@ -1,14 +1,11 @@
 {
   "name": "@sdl/gateway",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "scripts": {
     "dev": "nodemon src/main.ts"
   },
   "dependencies": {
-    "@sdl/kafka": "1.0.0",
-    "mqtt": "^5.14.1"
-  },
-  "devDependencies": {
-    "@types/mqtt": "^2.5.0"
+    "@sdl/kafka": "0.1.1",
+    "@sdl/mqtt": "0.1.1"
   }
 }

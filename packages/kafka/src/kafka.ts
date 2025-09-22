@@ -1,4 +1,4 @@
-import {Admin, Consumer, Kafka, Logger, Producer} from 'kafkajs'
+import {Consumer, Kafka, Logger, Producer} from 'kafkajs'
 
 abstract class KafkaBase {
     protected readonly kafka: Kafka;

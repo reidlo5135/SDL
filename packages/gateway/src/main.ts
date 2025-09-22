@@ -1,33 +1,30 @@
 import {KafkaClient, KafkaProducer} from '@sdl/kafka';
+import {MQTTClient} from '@sdl/mqtt';
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const runKafka = async () => {
+const run = async () => {
+    const mqttClient = new MQTTClient('mqtt', '192.168.205.220', 1883, 'mes-gateway-client', 'mes-gateway-client', 'mes-gateway-client');
     const kafkaClient = new KafkaClient('sdl_gateway', ['192.168.205.220:9092']);
 
     try {
         const kafkaProducer: KafkaProducer = await kafkaClient.createProducer();
 
-        while (true) {
-            await kafkaProducer.produce("mes.production.completed", JSON.stringify({
+        mqttClient.subscribe('mes.production.completed', 0, (message: string): void => {
+            console.log('Received message:', JSON.parse(message));
+
+            kafkaProducer.produce("mes.production.completed", JSON.stringify({
                 key: 'product-123',
-                value: JSON.stringify({
-                    productId: 'product-123',
-                    quantity: 100,
-                    timestamp: new Date().toISOString(),
-                }),
+                value: message,
             }));
-            await sleep(1000);
-        }
+        });
     } catch (error) {
         kafkaClient.getLogger().error(`Error with producer: ${error}`);
     }
-};
+}
 
 (async function main(): Promise<void> {
-    await runKafka()
-        .then(() => console.log('Producer running...'))
-        .catch((error) => console.error('Error running producer:', error));
+    await run()
+        .then(() => console.log('MQTT & Kafka running...'))
+        .catch((error) => console.error('Error running MQTT & Kafka: ', error));
 })().catch((e: Error): void => {
     console.error(e);
 });
