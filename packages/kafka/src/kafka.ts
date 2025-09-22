@@ -1,4 +1,4 @@
-import {Consumer, Kafka, Logger, Producer} from 'kafkajs'
+import {Consumer, EachMessagePayload, Kafka, Logger, Producer} from 'kafkajs'
 
 abstract class KafkaBase {
     protected readonly kafka: Kafka;
@@ -56,7 +56,7 @@ export class KafkaConsumer extends KafkaBase {
             .catch(e => this.getLogger().error(`Error subscribing to topic: ${e}`));
 
         await this.consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
+            eachMessage: async ({ topic, partition, message }: EachMessagePayload): Promise<void> => {
                 if (message.value) {
                     const receivedMessage = message.value.toString();
                     callback(receivedMessage);
