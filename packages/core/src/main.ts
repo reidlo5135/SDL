@@ -1,22 +1,31 @@
-import {KafkaClient, KafkaConsumer} from '@sdl/kafka';
+import {KafkaClient } from '@sdl/kafka';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import {INestApplication, ValidationPipe} from '@nestjs/common';
+import { KafkaStrategy } from "./modules/kafka/application/kafka.strategy";
+import { KAFKA_CLIENT } from './modules/kafka/domain/kafka.constants';
 
-const runKafka = async () => {
-    const kafkaClient = new KafkaClient('sdl_core', ['192.168.205.220:9092']);
+async function bootstrap(): Promise<void> {
+    const app: INestApplication<any> = await NestFactory.create(AppModule);
+    app.useGlobalPipes(new ValidationPipe({
+        whitelist: true,
+        transform: true
+    }));
 
-    try {
-        const kafkaConsumer: KafkaConsumer = await kafkaClient.createConsumer('mes-core-consumer');
-        await kafkaConsumer.consume('mes.production.completed', (message: string): void => {
-            kafkaClient.getLogger().info('Received message:', JSON.parse(message));
-        });
-    } catch (error) {
-        kafkaClient.getLogger().error(`Error with consumer: ${error}`);
-    }
-};
+    const kafkaClient: KafkaClient = app.get<KafkaClient>(KAFKA_CLIENT);
+    app.connectMicroservice({
+        strategy: new KafkaStrategy(kafkaClient),
+    });
+
+    await app.startAllMicroservices();
+    await app.listen(3000);
+    console.log(`Server running... ${await app.getUrl()}`);
+}
 
 (async function main(): Promise<void> {
-    await runKafka()
-        .then(() => console.log('Consumer running...'))
-        .catch((error) => console.error('Error running consumer:', error));
+    await bootstrap()
+        .then(() => console.log('Core running...'))
+        .catch((error) => console.error('Error running Core: ', error));
 })().catch((e: Error): void => {
     console.error(e);
 });

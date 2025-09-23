@@ -62,9 +62,7 @@ export class KafkaConsumer extends KafkaBase {
                     callback(receivedMessage);
                 }
             }
-        })
-            .then(r => this.getLogger().info('Consumer running successfully!'))
-            .catch(e => this.getLogger().error(`Error running consumer: ${e}`));
+        });
     }
 
     public async disconnectConsumer(): Promise<void> {
@@ -72,10 +70,7 @@ export class KafkaConsumer extends KafkaBase {
             throw new Error('Consumer is not initialized');
         }
 
-        this.getLogger().info('Disconnecting consumer...');
-        await this.consumer.disconnect()
-            .then(r => this.getLogger().info('Consumer disconnected successfully!'))
-            .catch(e => this.getLogger().error(`Error disconnecting consumer: ${e}`));
+        await this.consumer.disconnect();
     }
 }
 
@@ -93,13 +88,10 @@ export class KafkaProducer extends KafkaBase {
             throw new Error('Producer is not initialized');
         }
 
-        this.getLogger().info(`Sending message to topic: ${topic} with value: ${message}`);
         await this.producer.send({
             topic,
             messages: [{ value: message }],
-        })
-            .then(r => this.getLogger().info('Message sent successfully!'))
-            .catch(e => this.getLogger().error('Error sending message:', e));
+        });
     }
 
     public async disconnectProducer(): Promise<void> {
