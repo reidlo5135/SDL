@@ -1,4 +1,4 @@
-import {Consumer, Kafka, Logger, Producer} from 'kafkajs'
+import {Consumer, EachMessagePayload, Kafka, Logger, Producer} from 'kafkajs'
 
 abstract class KafkaBase {
     protected readonly kafka: Kafka;
@@ -56,15 +56,13 @@ export class KafkaConsumer extends KafkaBase {
             .catch(e => this.getLogger().error(`Error subscribing to topic: ${e}`));
 
         await this.consumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
+            eachMessage: async ({ topic, partition, message }: EachMessagePayload): Promise<void> => {
                 if (message.value) {
                     const receivedMessage = message.value.toString();
                     callback(receivedMessage);
                 }
             }
-        })
-            .then(r => this.getLogger().info('Consumer running successfully!'))
-            .catch(e => this.getLogger().error(`Error running consumer: ${e}`));
+        });
     }
 
     public async disconnectConsumer(): Promise<void> {
@@ -72,10 +70,7 @@ export class KafkaConsumer extends KafkaBase {
             throw new Error('Consumer is not initialized');
         }
 
-        this.getLogger().info('Disconnecting consumer...');
-        await this.consumer.disconnect()
-            .then(r => this.getLogger().info('Consumer disconnected successfully!'))
-            .catch(e => this.getLogger().error(`Error disconnecting consumer: ${e}`));
+        await this.consumer.disconnect();
     }
 }
 
@@ -93,13 +88,10 @@ export class KafkaProducer extends KafkaBase {
             throw new Error('Producer is not initialized');
         }
 
-        this.getLogger().info(`Sending message to topic: ${topic} with value: ${message}`);
         await this.producer.send({
             topic,
             messages: [{ value: message }],
-        })
-            .then(r => this.getLogger().info('Message sent successfully!'))
-            .catch(e => this.getLogger().error('Error sending message:', e));
+        });
     }
 
     public async disconnectProducer(): Promise<void> {
