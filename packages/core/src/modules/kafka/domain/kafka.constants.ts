@@ -1,2 +1,0 @@
-export const KAFKA_CLIENT = 'KAFKA_CLIENT';
-export const KAFKA_PRODUCER = 'KAFKA_PRODUCER';

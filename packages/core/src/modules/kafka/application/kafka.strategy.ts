@@ -1,15 +1,17 @@
 import {Server, CustomTransportStrategy, MessageHandler} from '@nestjs/microservices';
 import { KafkaClient, KafkaConsumer } from '@sdl/kafka';
+import {KafkaService} from "./kafka.service";
 
 export class KafkaStrategy extends Server implements CustomTransportStrategy {
     private kafkaConsumer: KafkaConsumer | undefined;
 
-    constructor(private readonly kafkaClient: KafkaClient) {
+    constructor(private readonly kafkaService: KafkaService) {
         super();
     }
 
     public async listen(callback: () => void): Promise<void> {
-        this.kafkaConsumer = await this.kafkaClient.createConsumer('mes-core-consumer');
+        const kafkaClient: KafkaClient = this.kafkaService.getClient();
+        this.kafkaConsumer = await kafkaClient.createConsumer('mes-core-consumer');
 
         const registeredPatterns = [...this.messageHandlers.keys()];
         this.logger.log(`Subscribing to topics: ${registeredPatterns.join(', ')}`);
