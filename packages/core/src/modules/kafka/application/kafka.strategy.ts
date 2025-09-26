@@ -1,6 +1,6 @@
-import {Server, CustomTransportStrategy, MessageHandler} from '@nestjs/microservices';
+import { Server, CustomTransportStrategy, MessageHandler } from '@nestjs/microservices';
 import { KafkaClient, KafkaConsumer } from '@sdl/kafka';
-import {KafkaService} from "./kafka.service";
+import { KafkaService } from "./kafka.service";
 
 export class KafkaStrategy extends Server implements CustomTransportStrategy {
     private kafkaConsumer: KafkaConsumer | undefined;
