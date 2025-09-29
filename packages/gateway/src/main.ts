@@ -16,6 +16,15 @@ const run: () => Promise<void> = async () => {
                 value: JSON.parse(message),
             }));
         });
+
+        mqttClient.subscribe('vehicle.telemetry.raw', 0, (message: string): void => {
+            console.info(`Received message: ${JSON.stringify(JSON.parse(message))}`);
+
+            kafkaProducer.produce("vehicle.telemetry.raw", JSON.stringify({
+                key: 'vehicle-123',
+                value: JSON.parse(message),
+            }));
+        });
     } catch (error) {
         kafkaClient.getLogger().error(`Error with producer: ${error}`);
     }

@@ -5,6 +5,8 @@ import { LogsService } from "../application/logs.service"
 export class LogsController {
     private readonly logger: Logger = new Logger(LogsController.name);
 
-    constructor(private readonly logsService: LogsService) {}
+    constructor(
+        private readonly logsService: LogsService
+    ) {}
 
 }

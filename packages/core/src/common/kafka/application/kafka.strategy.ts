@@ -1,34 +1,33 @@
 import { Server, CustomTransportStrategy, MessageHandler } from '@nestjs/microservices';
 import { KafkaConsumer } from '@sdl/kafka';
 import { KafkaService } from './kafka.service';
+import { EachMessagePayload } from "@nestjs/microservices/external/kafka.interface";
 
 export class KafkaStrategy extends Server implements CustomTransportStrategy {
     private kafkaConsumer: KafkaConsumer | undefined;
 
-    constructor(private readonly kafkaService: KafkaService) {
+    constructor(
+        private readonly kafkaService: KafkaService
+    ) {
         super();
     }
 
     public async listen(callback: () => void): Promise<void> {
         try {
-            this.kafkaConsumer = await this.kafkaService.createConsumer('sdl-core-consumer');
+            this.kafkaConsumer = await this.kafkaService.getClient().createConsumer('sdl-core-consumer');
 
-            const registeredPatterns: string[] = [...this.messageHandlers.keys()];
-            this.logger.log(`Subscribing to topics: ${registeredPatterns.join(', ')}`);
+            const topicsToSubscribe: string[] = [...this.messageHandlers.keys()];
 
-            for (const topic of registeredPatterns) {
-                const handler: MessageHandler<any, any, any> | undefined = this.messageHandlers.get(topic);
-                if (handler) {
-                    await this.kafkaConsumer.consume(topic, async (message: string): Promise<void> => {
-                        try {
-                            const parsedMessage: any = JSON.parse(message);
-                            await handler(parsedMessage);
-                        } catch (error) {
-                            this.logger.error(`Error handling message for topic ${topic}:`, error);
-                        }
-                    });
+            await this.kafkaConsumer.subscribe(topicsToSubscribe);
+            await this.kafkaConsumer.run(async (payload: EachMessagePayload) => {
+                const { topic, message } = payload;
+                const handler: MessageHandler | undefined = this.messageHandlers.get(topic);
+                if (handler && message.value) {
+                    const parsedMessage = JSON.parse(message.value.toString());
+                    await handler(parsedMessage);
                 }
-            }
+            });
+
             callback();
         } catch (error: any) {
             this.logger.error('Error initializing Kafka consumer:', error);
@@ -41,7 +40,7 @@ export class KafkaStrategy extends Server implements CustomTransportStrategy {
         }
     }
 
-    on<EventKey extends string = string, EventCallback extends Function = Function>(event: EventKey, callback: EventCallback) {
+    on<EventKey extends string = string, EventCallback extends Function = Function>(event: EventKey, callback: EventCallback): void {
         throw new Error('Method not implemented.');
     }
 

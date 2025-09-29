@@ -1,18 +1,15 @@
 import {Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { KafkaClient, KafkaConsumer } from '@sdl/kafka';
+import { KafkaClient } from '@sdl/kafka';
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { RedisService } from "../../redis/redis.service";
 import { LogsService } from "../../../modules/logs/application/logs.service";
-
-const BATCH_SIZE = 500;
 
 @Injectable()
 export class KafkaService {
     private readonly logger: Logger = new Logger(KafkaService.name);
     private readonly kafkaClient: KafkaClient | undefined;
+    private readonly kafkaConfig: any | undefined;
 
     constructor(
         private readonly configService: ConfigService,
@@ -20,12 +17,12 @@ export class KafkaService {
         private readonly logsService: LogsService
     ) {
         try {
-            const kafkaConfig: any = this.configService.get('kafka');
+            this.kafkaConfig = this.configService.get('kafka');
             const brokers: string[] = [];
-            const url: string = `${kafkaConfig.host}:${kafkaConfig.port}`;
+            const url: string = `${this.kafkaConfig.host}:${this.kafkaConfig.port}`;
             brokers.push(url);
 
-            this.kafkaClient = new KafkaClient(kafkaConfig.clientId, brokers);
+            this.kafkaClient = new KafkaClient(this.kafkaConfig.clientId, brokers);
             this.logger.log(`Kafka client initialized with brokers: ${brokers}`);
         } catch (error: any) {
             this.logger.error(`Failed to initialize Kafka client: ${error}`);
@@ -39,16 +36,12 @@ export class KafkaService {
         return this.kafkaClient;
     }
 
-    public async createConsumer(groupId: string): Promise<KafkaConsumer> {
+    public async queueLogsToRedis(topic: string, message: any): Promise<void> {
         try {
-            if (!this.kafkaClient) {
-                throw new Error('KafkaClient is not initialized yet.');
-            }
-
-            return await this.kafkaClient.createConsumer(groupId);
+            this.logger.log(`Adding to Redis Queue message : ${JSON.stringify(message)} which topic : ${topic}`);
+            await this.redisService.addMessageToQueue(topic, message);
         } catch (error: any) {
-            this.logger.error(`Failed to create consumer: ${error}`);
-            throw error;
+            this.logger.error(`Failed to insert KafkaLogs for ${error}`);
         }
     }
 
@@ -56,7 +49,7 @@ export class KafkaService {
     async batchKafkaLogsInsert(): Promise<void> {
         this.logger.debug('Running batch job to process Redis queue...');
 
-        const messages: any[] = await this.redisService.getMessagesFromQueue(BATCH_SIZE);
+        const messages: any[] = await this.redisService.getMessagesFromQueue(this.kafkaConfig.batchSize);
 
         if (messages.length === 0) {
             this.logger.debug('No messages in queue. Skipping.');
