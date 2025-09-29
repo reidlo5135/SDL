@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity('kafka_logs')
-export class KafkaLog {
+export class LogsEntity {
     @PrimaryGeneratedColumn()
     id: number | undefined;
 

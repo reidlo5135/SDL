@@ -46,22 +46,20 @@ export class KafkaConsumer extends KafkaBase {
             .catch(e => this.getLogger().error(`Error connecting consumer: ${e}`));
     }
 
-    public async consume(topic: string, callback: (message: string) => void): Promise<void> {
+    public async subscribe(topics: string[]): Promise<void> {
         if (!this.consumer) {
             throw new Error('Consumer is not initialized');
         }
+        await this.consumer.subscribe({ topics, fromBeginning: true });
+        this.getLogger().info(`Consumer subscribed successfully with topics: ${topics.join(', ')}`);
+    }
 
-        await this.consumer.subscribe({ topic })
-            .then(r => this.getLogger().info(`Consumer subscribed successfully with topic: ${topic}`))
-            .catch(e => this.getLogger().error(`Error subscribing to topic: ${e}`));
-
+    public async run(eachMessageCallback: (payload: EachMessagePayload) => Promise<void>): Promise<void> {
+        if (!this.consumer) {
+            throw new Error('Consumer is not initialized');
+        }
         await this.consumer.run({
-            eachMessage: async ({ topic, partition, message }: EachMessagePayload): Promise<void> => {
-                if (message.value) {
-                    const receivedMessage = message.value.toString();
-                    callback(receivedMessage);
-                }
-            }
+            eachMessage: eachMessageCallback
         });
     }
 
