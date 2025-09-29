@@ -3,7 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KafkaClient, KafkaConsumer } from '@sdl/kafka';
-import { KafkaLog } from '../../kafka/domain/kafka.entity';
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { RedisService } from "../../redis/redis.service";
+import { LogsService } from "../../../modules/logs/application/logs.service";
+
+const BATCH_SIZE = 500;
 
 @Injectable()
 export class KafkaService {
@@ -11,9 +15,9 @@ export class KafkaService {
     private readonly kafkaClient: KafkaClient | undefined;
 
     constructor(
-        @InjectRepository(KafkaLog)
-        private readonly kafkaLogRepository: Repository<KafkaLog>,
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private readonly redisService: RedisService,
+        private readonly logsService: LogsService
     ) {
         try {
             const kafkaConfig: any = this.configService.get('kafka');
@@ -48,21 +52,23 @@ export class KafkaService {
         }
     }
 
-    async bulkInsertKafkaLogs(messages: Array<{ topic: string; message: any }>): Promise<void> {
+    @Cron(CronExpression.EVERY_5_SECONDS)
+    async batchKafkaLogsInsert(): Promise<void> {
+        this.logger.debug('Running batch job to process Redis queue...');
+
+        const messages: any[] = await this.redisService.getMessagesFromQueue(BATCH_SIZE);
+
+        if (messages.length === 0) {
+            this.logger.debug('No messages in queue. Skipping.');
+            return;
+        }
+
+        this.logger.log(`Processing ${messages.length} messages from Redis queue.`);
+
         try {
-            const kafkaLogs: KafkaLog[] = messages.map(msg =>
-                this.kafkaLogRepository.create({
-                    topic: msg.topic,
-                    message: msg.message,
-                })
-            );
-
-            await this.kafkaLogRepository.save(kafkaLogs);
-            this.logger.log(`Successfully inserted ${messages.length} logs to DB.`);
-
-        } catch (error: any) {
-            this.logger.error('Failed to bulk insert logs to DB', error);
-            throw error;
+            await this.logsService.bulkInsertLogs(messages);
+        } catch (error) {
+            this.logger.error(`Batch processing failed. Error: ${error}`);
         }
     }
 }

@@ -5,7 +5,7 @@ import databaseConfig from './database/database.config';
 import kafkaConfig from './kafka/kafka.config';
 import mqttConfig from './mqtt/mqtt.config';
 import redisConfig from './redis/redis.config';
-import { KafkaLog } from '../modules/kafka/domain/kafka.entity';
+import { LogsEntity } from "../modules/logs/domain/logs.entity";
 
 @Module({
     imports: [
@@ -24,7 +24,7 @@ import { KafkaLog } from '../modules/kafka/domain/kafka.entity';
             useFactory: (configService: ConfigService) => ({
                 ...configService.get('database'),
                 entities: [
-                    KafkaLog
+                    LogsEntity
                 ]
             })
         }),

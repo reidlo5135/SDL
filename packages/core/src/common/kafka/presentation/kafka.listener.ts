@@ -1,11 +1,11 @@
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { RedisService } from '../../../common/core/redis.service';
+import { RedisService } from '../../redis/redis.service';
 import { KafkaService } from '../application/kafka.service';
 
 @Controller()
-export class KafkaController {
-    private readonly logger: Logger = new Logger(KafkaController.name);
+export class KafkaListener {
+    private readonly logger: Logger = new Logger(KafkaListener.name);
 
     constructor(
         private readonly redisService: RedisService,
