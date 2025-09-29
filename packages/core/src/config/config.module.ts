@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { TypeOrmModule } from '@nestjs/typeorm';
 import databaseConfig from './database/database.config';
 import kafkaConfig from './kafka/kafka.config';
 import mqttConfig from './mqtt/mqtt.config';
-import { KafkaLog } from "../modules/kafka/domain/kafka.entity";
+import redisConfig from './redis/redis.config';
+import { KafkaLog } from '../modules/kafka/domain/kafka.entity';
 
 @Module({
     imports: [
@@ -13,7 +14,8 @@ import { KafkaLog } from "../modules/kafka/domain/kafka.entity";
             load: [
                 databaseConfig,
                 kafkaConfig,
-                mqttConfig
+                mqttConfig,
+                redisConfig
             ],
         }),
         TypeOrmModule.forRootAsync({

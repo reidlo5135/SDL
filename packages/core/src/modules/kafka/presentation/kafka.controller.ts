@@ -1,6 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { RedisService } from '../../../common/data/redis.service';
+import { RedisService } from '../../../common/core/redis.service';
 import { KafkaService } from '../application/kafka.service';
 
 @Controller()
