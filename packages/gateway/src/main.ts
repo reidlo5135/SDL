@@ -1,9 +1,9 @@
 import { KafkaClient, KafkaProducer } from '@sdl/kafka';
 import { MQTTClient } from '@sdl/mqtt';
 
-const run = async () => {
-    const mqttClient = new MQTTClient('mqtt', '192.168.205.220', 1883, 'mes-gateway-client', 'mes-gateway-client', 'mes-gateway-client');
-    const kafkaClient = new KafkaClient('sdl_gateway', ['192.168.205.220:9092']);
+const run: () => Promise<void> = async () => {
+    const mqttClient: MQTTClient = new MQTTClient('mqtt', '192.168.205.220', 1883, 'mes-gateway-client', 'mes-gateway-client', 'mes-gateway-client');
+    const kafkaClient: KafkaClient = new KafkaClient('sdl_gateway', ['192.168.205.220:9092']);
 
     try {
         const kafkaProducer: KafkaProducer = await kafkaClient.createProducer();

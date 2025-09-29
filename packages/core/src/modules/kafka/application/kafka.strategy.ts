@@ -1,17 +1,18 @@
-import {Server, CustomTransportStrategy, MessageHandler} from '@nestjs/microservices';
+import { Server, CustomTransportStrategy, MessageHandler } from '@nestjs/microservices';
 import { KafkaClient, KafkaConsumer } from '@sdl/kafka';
+import { KafkaService } from './kafka.service';
 
 export class KafkaStrategy extends Server implements CustomTransportStrategy {
     private kafkaConsumer: KafkaConsumer | undefined;
 
-    constructor(private readonly kafkaClient: KafkaClient) {
+    constructor(private readonly kafkaService: KafkaService) {
         super();
     }
 
     public async listen(callback: () => void): Promise<void> {
-        this.kafkaConsumer = await this.kafkaClient.createConsumer('mes-core-consumer');
+        this.kafkaConsumer = await this.kafkaService.createConsumer('mes-core-consumer');
 
-        const registeredPatterns = [...this.messageHandlers.keys()];
+        const registeredPatterns: string[] = [...this.messageHandlers.keys()];
         this.logger.log(`Subscribing to topics: ${registeredPatterns.join(', ')}`);
 
         for (const topic of registeredPatterns) {
@@ -37,10 +38,10 @@ export class KafkaStrategy extends Server implements CustomTransportStrategy {
     }
 
     on<EventKey extends string = string, EventCallback extends Function = Function>(event: EventKey, callback: EventCallback) {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     unwrap<T>(): T {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 }

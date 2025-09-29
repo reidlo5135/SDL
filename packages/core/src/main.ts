@@ -1,9 +1,8 @@
-import {KafkaClient } from '@sdl/kafka';
 import { NestFactory } from '@nestjs/core';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import {INestApplication, ValidationPipe} from '@nestjs/common';
-import { KafkaStrategy } from "./modules/kafka/application/kafka.strategy";
-import { KAFKA_CLIENT } from './modules/kafka/domain/kafka.constants';
+import { KafkaStrategy } from './modules/kafka/application/kafka.strategy';
+import { KafkaService } from './modules/kafka/application/kafka.service';
 
 async function bootstrap(): Promise<void> {
     const app: INestApplication<any> = await NestFactory.create(AppModule);
@@ -12,9 +11,9 @@ async function bootstrap(): Promise<void> {
         transform: true
     }));
 
-    const kafkaClient: KafkaClient = app.get<KafkaClient>(KAFKA_CLIENT);
+    const kafkaService: KafkaService = app.get(KafkaService);
     app.connectMicroservice({
-        strategy: new KafkaStrategy(kafkaClient),
+        strategy: new KafkaStrategy(kafkaService),
     });
 
     await app.startAllMicroservices();
@@ -24,8 +23,8 @@ async function bootstrap(): Promise<void> {
 
 (async function main(): Promise<void> {
     await bootstrap()
-        .then(() => console.log('Core running...'))
-        .catch((error) => console.error('Error running Core: ', error));
+        .then((): void => console.log('Core running...'))
+        .catch((error: any): void => console.error(`Error running Core: ${error.message}`));
 })().catch((e: Error): void => {
     console.error(e);
 });
