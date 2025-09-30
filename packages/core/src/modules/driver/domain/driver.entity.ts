@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('drivers')
-export class DriverEntity {
+export class Drivers {
 
     @PrimaryGeneratedColumn()
     driver_id: string | undefined;

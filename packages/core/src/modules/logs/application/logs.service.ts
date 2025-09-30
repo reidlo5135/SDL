@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { LogsEntity } from "../domain/logs.entity";
+import { Logs } from "../domain/logs.entity";
 import { InjectRepository }   from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -8,14 +8,14 @@ export class LogsService {
     private readonly logger: Logger = new Logger(LogsService.name);
 
     constructor(
-        @InjectRepository(LogsEntity)
-        private readonly logsEntityRepository: Repository<LogsEntity>,
+        @InjectRepository(Logs)
+        private readonly logsEntityRepository: Repository<Logs>,
     ) {
     }
 
     async bulkInsertLogs(messages: Array<{ topic: string; message: any }>): Promise<void> {
         try {
-            const logsEntities: LogsEntity[] = messages.map(msg =>
+            const logsEntities: Logs[] = messages.map(msg =>
                 this.logsEntityRepository.create({
                     topic: msg.topic,
                     message: msg.message,

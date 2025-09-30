@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { KafkaService } from "./common/kafka/application/kafka.service";
-import { KafkaStrategy } from "./common/kafka/application/kafka.strategy";
+import { KafkaStrategy } from "./common/kafka/presentation/kafka.strategy";
 
 async function bootstrap(): Promise<void> {
     const app: INestApplication<any> = await NestFactory.create(AppModule);

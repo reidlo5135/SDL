@@ -5,7 +5,11 @@ import databaseConfig from './database/database.config';
 import kafkaConfig from './kafka/kafka.config';
 import mqttConfig from './mqtt/mqtt.config';
 import redisConfig from './redis/redis.config';
-import { LogsEntity } from "../modules/logs/domain/logs.entity";
+import { Logs } from "../modules/logs/domain/logs.entity";
+import { Drivers } from "../modules/driver/domain/driver.entity";
+import { Location } from "../modules/location/domain/location.entity";
+import { Vehicles, VehicleTelemetry } from "../modules/vehicle/domain/vehicles.entity";
+import { Orders } from "../modules/order/domain/order.entity";
 
 @Module({
     imports: [
@@ -24,7 +28,12 @@ import { LogsEntity } from "../modules/logs/domain/logs.entity";
             useFactory: (configService: ConfigService) => ({
                 ...configService.get('database'),
                 entities: [
-                    LogsEntity
+                    Logs,
+                    Drivers,
+                    Location,
+                    Vehicles,
+                    VehicleTelemetry,
+                    Orders
                 ]
             })
         }),

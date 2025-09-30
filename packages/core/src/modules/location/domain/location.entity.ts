@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('location')
-export class LocationEntity {
+export class Location {
 
     @PrimaryGeneratedColumn()
     location_id: string | undefined;

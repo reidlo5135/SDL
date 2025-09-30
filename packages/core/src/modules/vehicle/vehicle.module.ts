@@ -2,16 +2,21 @@ import { Module } from "@nestjs/common";
 import { VehicleService } from "./application/vehicle.service";
 import { VehicleController } from "./presentation/vehicle.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { VehicleEntity } from "./domain/vehicle.entity";
+import { Vehicles, VehicleTelemetry } from "./domain/vehicles.entity";
+import { KafkaModule } from "../../common/kafka/kafka.module";
+import { VehicleListener } from "./presentation/vehicle.listener";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([
-            VehicleEntity
-        ])
+            Vehicles,
+            VehicleTelemetry
+        ]),
+        KafkaModule
     ],
     controllers: [
-        VehicleController
+        VehicleController,
+        VehicleListener
     ],
     providers: [
         VehicleService

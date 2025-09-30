@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 import { KafkaService } from './application/kafka.service';
-import { KafkaListener } from './presentation/kafka.listener';
 import { LogsModule } from "../../modules/logs/logs.module";
+import { VehicleModule } from "../../modules/vehicle/vehicle.module";
 
 @Module({
     imports: [
         LogsModule
     ],
-    controllers: [
-        KafkaListener
-    ],
+    controllers: [],
     providers: [
         KafkaService,
         RedisService
