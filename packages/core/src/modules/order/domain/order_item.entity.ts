@@ -1,9 +1,9 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, BeforeInsert } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Waypoint } from './waypoint.entity';
+import { OrderWaypoints } from './order_waypoint.entity';
 
-@Entity('items')
-export class Item {
+@Entity('order_items')
+export class OrderItems {
     @PrimaryColumn('uuid')
     id: string | undefined;
 
@@ -19,8 +19,8 @@ export class Item {
     @Column({ type: 'varchar', unique: true })
     customId: string | undefined;
 
-    @ManyToOne(() => Waypoint, waypoint => waypoint.items)
-    waypoint: Waypoint | undefined;
+    @ManyToOne(() => OrderWaypoints, waypoint => waypoint.items)
+    waypoint: OrderWaypoints | undefined;
 
     @BeforeInsert()
     generateId() {

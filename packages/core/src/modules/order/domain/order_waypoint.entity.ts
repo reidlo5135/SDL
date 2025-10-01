@@ -1,16 +1,16 @@
 import { Entity, Column, ManyToOne, Index, BeforeInsert, PrimaryColumn, OneToMany } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Orders } from './order.entity';
-import { Item } from "./item.entity";
-import { Location } from "./location.entity";
+import { OrderItems } from "./order_item.entity";
+import { Location } from "./order_location.entity";
 
 export enum WaypointType {
     PICKUP = 'PICKUP',
     DROPOFF = 'DROPOFF',
 }
 
-@Entity('waypoints')
-export class Waypoint {
+@Entity('order_waypoints')
+export class OrderWaypoints {
     @PrimaryColumn('uuid')
     id: string | undefined;
 
@@ -30,8 +30,8 @@ export class Waypoint {
     @Column(() => Location, { prefix: false })
     location: Location | undefined;
 
-    @OneToMany(() => Item, item => item.waypoint, { cascade: true, eager: true })
-    items: Item[] | undefined;
+    @OneToMany(() => OrderItems, item => item.waypoint, { cascade: true, eager: true })
+    items: OrderItems[] | undefined;
 
     @Column({ type: 'varchar', length: 255 })
     name: string | undefined;

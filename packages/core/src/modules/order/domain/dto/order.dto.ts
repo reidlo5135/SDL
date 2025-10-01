@@ -1,11 +1,11 @@
 import {
     IsString, IsNotEmpty, IsEnum, IsArray, ValidateNested, IsOptional, IsDateString, IsNumber, IsLatitude, IsLongitude,
-    IsBoolean
+    IsBoolean, IsDefined
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Orders, ServiceType } from '../order.entity';
-import { WaypointType } from "../waypoint.entity";
+import { Orders, OrderServiceType } from '../order.entity';
+import { WaypointType } from "../order_waypoint.entity";
 
 export class LocationDto {
     @ApiProperty({ description: '위도', example: '1.351648' })
@@ -86,7 +86,7 @@ export class WaypointDto {
     phone: string | undefined;
 }
 
-class DeliveryDto {
+class DeliveryRequestDto {
     @ApiProperty({ description: '배송 세부 타입', example: 'RACE' })
     @IsString()
     @IsNotEmpty()
@@ -104,10 +104,10 @@ export class OrderCreateRequestDto {
     @IsNotEmpty()
     pickupTime: string | undefined;
 
-    @ApiProperty({ enum: ServiceType, description: '차량 서비스 타입', example: ServiceType.CAR })
-    @IsEnum(ServiceType)
+    @ApiProperty({ enum: OrderServiceType, description: '차량 서비스 타입', example: OrderServiceType.CAR })
+    @IsEnum(OrderServiceType)
     @IsNotEmpty()
-    serviceType: ServiceType | undefined;
+    serviceType: OrderServiceType | undefined;
 
     @ApiProperty({ type: () => [WaypointDto], description: '경유지 목록' })
     @IsArray()
@@ -116,11 +116,12 @@ export class OrderCreateRequestDto {
     @IsNotEmpty()
     waypoints: WaypointDto[] | undefined;
 
-    @ApiProperty({ type: () => DeliveryDto, description: '배송 상세 정보' })
+    @ApiProperty({ type: () => DeliveryRequestDto, description: '배송 상세 정보' })
+    @IsDefined()
     @ValidateNested()
-    @Type(() => DeliveryDto)
+    @Type(() => DeliveryRequestDto)
     @IsNotEmpty()
-    delivery: DeliveryDto | undefined;
+    delivery: DeliveryRequestDto | undefined;
 
     @ApiProperty()
     @IsBoolean()
