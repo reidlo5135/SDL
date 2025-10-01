@@ -11,6 +11,7 @@
     "@nestjs/microservices": "^11.1.6",
     "@nestjs/platform-express": "^11.1.6",
     "@nestjs/schedule": "^6.0.1",
+    "@nestjs/swagger": "^11.2.0",
     "@nestjs/typeorm": "^11.0.0",
     "@sdl/kafka": "0.1.1",
     "class-transformer": "^0.5.1",
@@ -21,5 +22,8 @@
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.27",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
   }
 }

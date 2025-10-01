@@ -10,6 +10,8 @@ import { Drivers } from "../modules/driver/domain/driver.entity";
 import { Location } from "../modules/location/domain/location.entity";
 import { Vehicles, VehicleTelemetry } from "../modules/vehicle/domain/vehicles.entity";
 import { Orders } from "../modules/order/domain/order.entity";
+import { Waypoint } from "../modules/order/domain/waypoint.entity";
+import { Item } from "../modules/order/domain/item.entity";
 
 @Module({
     imports: [
@@ -27,14 +29,17 @@ import { Orders } from "../modules/order/domain/order.entity";
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
                 ...configService.get('database'),
-                entities: [
-                    Logs,
-                    Drivers,
-                    Location,
-                    Vehicles,
-                    VehicleTelemetry,
-                    Orders
-                ]
+                entities: [__dirname + '/../../**/*.entity{.ts,.js}']
+                // entities: [
+                //     Logs,
+                //     Drivers,
+                //     Location,
+                //     Vehicles,
+                //     VehicleTelemetry,
+                //     Orders,
+                //     Waypoint,
+                //     Item
+                // ]
             })
         }),
     ],

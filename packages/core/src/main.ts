@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { KafkaService } from "./common/kafka/application/kafka.service";
 import { KafkaStrategy } from "./common/kafka/presentation/kafka.strategy";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap(): Promise<void> {
     const app: INestApplication<any> = await NestFactory.create(AppModule);
@@ -10,6 +11,15 @@ async function bootstrap(): Promise<void> {
         whitelist: true,
         transform: true
     }));
+
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('@sdl/core')
+        .setDescription('The @sdl/core API description')
+        .setVersion('1.0')
+        .addTag('@sdl/core')
+        .build();
+    const swaggerDocument = () => SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api', app, swaggerDocument);
 
     const kafkaService: KafkaService = app.get(KafkaService);
     app.connectMicroservice({
